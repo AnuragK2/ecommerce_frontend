@@ -1,9 +1,36 @@
 import React from "react";
 import { Grid, TextField, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../../State/Auth/Action";
+import { useEffect } from "react";
+import { getUser } from "../../State/Auth/Action";
+import { useSelector } from "react-redux";
 
 const LoginForm = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // useEffect(() => {
+  //         if(jwt){
+  //             dispatch(getUser(jwt));
+  //         }
+  //     }, [jwt, auth.jwt]);
+
+  // useEffect(() => {
+  //         if(jwt){
+  //             dispatch(getUser(jwt));
+  //         }
+  //     }, [jwt, auth.jwt]);
+
+  // useEffect(() => {
+  //         if(jwt){
+  //             dispatch(getUser(jwt));
+  //         }
+  //     }, [jwt, auth.jwt]);
+
+
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -12,7 +39,7 @@ const LoginForm = () => {
       email: data.get("email"),
       password: data.get("password"),
     };
-
+    dispatch(login(userData));
     console.log("userData", userData);
   };
 
