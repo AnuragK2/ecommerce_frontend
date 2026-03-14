@@ -22,7 +22,6 @@ import {
   PlusIcon,
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
-import { mens_kurta } from "../../../Data/MenKurta";
 import ProductCard from "./ProductCard";
 import { filters } from "./FilterData";
 import { singleFilter } from "./FilterData";
@@ -30,6 +29,7 @@ import {
   FormControl,
   FormControlLabel,
   FormLabel,
+  Pagination,
   Radio,
   RadioGroup,
 } from "@mui/material";
@@ -111,6 +111,13 @@ export default function Product() {
   const productItems =
     (productResponse?.products?.content ?? productResponse?.content) ??
     (Array.isArray(productResponse) ? productResponse : []);
+
+  const handlePageChange = (event, value) => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set("pageNumber", String(value));
+    const query = searchParams.toString();
+    navigate({ search: `?${query}` });
+  };
 
   const handleFilter = (value, sectionId) => {
     const searchParams = new URLSearchParams(location.search);
@@ -515,6 +522,11 @@ export default function Product() {
                   )}
                 </div>
               </div>
+            </div>
+          </section>
+          <section className="w-full px=[3.6rem]">
+            <div className="px-4 py-5 flex justify-center">
+              <Pagination count={productResponse?.totalPages || 1} color="primary" onChange={handlePageChange} />
             </div>
           </section>
         </main>

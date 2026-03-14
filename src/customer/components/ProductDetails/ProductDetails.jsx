@@ -19,68 +19,70 @@
   }
   ```
 */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { StarIcon } from "@heroicons/react/20/solid";
 import { RadioGroup } from "@headlessui/react";
-import { Box, Grid, LinearProgress, Rating } from "@mui/material";
-import { Button } from '@mui/material';
-import ProductReviewCard from './ProductReviewCard';
+import { Box, Grid, LinearProgress, Rating, Button } from "@mui/material";
+import ProductReviewCard from "./ProductReviewCard";
 import { mens_kurta } from "../../../Data/MenKurta";
 import HomeSectionCard from "../HomeSectionCard/HomeSectionCard";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { findProductById } from "../../../State/Product/Action";
+import { addItemToCart } from "../../../State/Cart/Action";
 
 
-
-const product = {
-  name: "Basic Tee 6-Pack",
-  price: "$192",
-  href: "#",
-  breadcrumbs: [
-    { id: 1, name: "Men", href: "#" },
-    { id: 2, name: "Clothing", href: "#" },
-  ],
-  images: [
-    {
-      src: "https://tailwindui.com/img/ecommerce-images/product-page-02-secondary-product-shot.jpg",
-      alt: "Two each of gray, white, and black shirts laying flat.",
-    },
-    {
-      src: "https://tailwindui.com/img/ecommerce-images/product-page-02-tertiary-product-shot-01.jpg",
-      alt: "Model wearing plain black basic tee.",
-    },
-    {
-      src: "https://tailwindui.com/img/ecommerce-images/product-page-02-tertiary-product-shot-02.jpg",
-      alt: "Model wearing plain gray basic tee.",
-    },
-    {
-      src: "https://tailwindui.com/img/ecommerce-images/product-page-02-featured-product-shot.jpg",
-      alt: "Model wearing plain white basic tee.",
-    },
-  ],
-  colors: [
-    { name: "White", class: "bg-white", selectedClass: "ring-gray-400" },
-    { name: "Gray", class: "bg-gray-200", selectedClass: "ring-gray-400" },
-    { name: "Black", class: "bg-gray-900", selectedClass: "ring-gray-900" },
-  ],
-  sizes: [
+// const product = {
+//   name: "Basic Tee 6-Pack",
+//   price: "$192",
+//   href: "#",
+//   breadcrumbs: [
+//     { id: 1, name: "Men", href: "#" },
+//     { id: 2, name: "Clothing", href: "#" },
+//   ],
+//   images: [
+//     {
+//       src: "https://tailwindui.com/img/ecommerce-images/product-page-02-secondary-product-shot.jpg",
+//       alt: "Two each of gray, white, and black shirts laying flat.",
+//     },
+//     {
+//       src: "https://tailwindui.com/img/ecommerce-images/product-page-02-tertiary-product-shot-01.jpg",
+//       alt: "Model wearing plain black basic tee.",
+//     },
+//     {
+//       src: "https://tailwindui.com/img/ecommerce-images/product-page-02-tertiary-product-shot-02.jpg",
+//       alt: "Model wearing plain gray basic tee.",
+//     },
+//     {
+//       src: "https://tailwindui.com/img/ecommerce-images/product-page-02-featured-product-shot.jpg",
+//       alt: "Model wearing plain white basic tee.",
+//     },
+//   ],
+//   colors: [
+//     { name: "White", class: "bg-white", selectedClass: "ring-gray-400" },
+//     { name: "Gray", class: "bg-gray-200", selectedClass: "ring-gray-400" },
+//     { name: "Black", class: "bg-gray-900", selectedClass: "ring-gray-900" },
+//   ],
+//   sizes: [
     
-    { name: "S", inStock: true },
-    { name: "M", inStock: true },
-    { name: "L", inStock: true },
-    { name: "XL", inStock: true },
+//     { name: "S", inStock: true },
+//     { name: "M", inStock: true },
+//     { name: "L", inStock: true },
+//     { name: "XL", inStock: true },
     
-  ],
-  description:
-    'The Basic Tee 6-Pack allows you to fully express your vibrant personality with three grayscale options. Feeling adventurous? Put on a heather gray tee. Want to be a trendsetter? Try our exclusive colorway: "Black". Need to add an extra pop of color to your outfit? Our white tee has you covered.',
-  highlights: [
-    "Hand cut and sewn locally",
-    "Dyed with our proprietary colors",
-    "Pre-washed & pre-shrunk",
-    "Ultra-soft 100% cotton",
-  ],
-  details:
-    'The 6-Pack includes two black, two white, and two heather gray Basic Tees. Sign up for our subscription service and be the first to get new, exciting colors, like our upcoming "Charcoal Gray" limited release.',
-};
+//   ],
+//   description:
+//     'The Basic Tee 6-Pack allows you to fully express your vibrant personality with three grayscale options. Feeling adventurous? Put on a heather gray tee. Want to be a trendsetter? Try our exclusive colorway: "Black". Need to add an extra pop of color to your outfit? Our white tee has you covered.',
+//   highlights: [
+//     "Hand cut and sewn locally",
+//     "Dyed with our proprietary colors",
+//     "Pre-washed & pre-shrunk",
+//     "Ultra-soft 100% cotton",
+//   ],
+//   details:
+//     'The 6-Pack includes two black, two white, and two heather gray Basic Tees. Sign up for our subscription service and be the first to get new, exciting colors, like our upcoming "Charcoal Gray" limited release.',
+// };
 const reviews = { href: "#", average: 4, totalCount: 117 };
 
 function classNames(...classes) {
@@ -88,12 +90,46 @@ function classNames(...classes) {
 }
 
 export default function ProductDetails() {
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
-  const [selectedSize, setSelectedSize] = useState(product.sizes[2]);
+  const [selectedSize, setSelectedSize] = useState("");
   const navigate = useNavigate();
+  const params = useParams();
+  const dispatch = useDispatch();
+  const { product } = useSelector((store) => store.products);
+  const breadcrumbs = product?.breadcrumbs ?? [];
+  const images = product?.images ?? [];
+  const sizes = product?.sizes ?? [];
+  const highlights = product?.highlights ?? [];
 
   const handleAddToCart = () => {
-    navigate("/cart") 
+    const data = {
+      productId: product._id || product.id,
+      size: selectedSize?.name,
+    };
+    console.log("Adding to cart: ", data);
+    dispatch(addItemToCart(data));
+    console.log("Item added to cart");
+
+    navigate("/cart");
+  };
+
+  useEffect(() => {
+    if (params?.productId) {
+      dispatch(findProductById({ productId: params.productId }));
+    }
+  }, [dispatch, params.productId]);
+
+  useEffect(() => {
+    if (product) {
+      setSelectedSize(product.sizes?.[2] ?? null);
+    }
+  }, [product]);
+
+  if (!product) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LinearProgress className="w-full max-w-md" />
+      </div>
+    );
   }
 
   return (
@@ -104,7 +140,7 @@ export default function ProductDetails() {
             role="list"
             className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8"
           >
-            {product.breadcrumbs.map((breadcrumb) => (
+            {breadcrumbs.map((breadcrumb) => (
               <li key={breadcrumb.id}>
                 <div className="flex items-center">
                   <a
@@ -143,13 +179,13 @@ export default function ProductDetails() {
           <div className="flex flex-col items-center">
             <div className="overflow-hidden rounded-lg max-w-[30rem] max-h-[35rem]">
               <img
-                src={product.images[0].src}
-                alt={product.images[0].alt}
+                src={product?.imageUrl}
+                alt={product?.images?.[0]?.alt ?? "Product image"}
                 className="h-full w-full object-cover object-center"
               />
             </div>
             <div className="flex flex-wrap space-x-5 justify-center items-center">
-              {product.images.map((item, idx) => (
+              {images.map((item, idx) => (
                 <div key={item.src || idx} className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] max-h-[5rem] mt-4">
                   <img
                     src={item.src}
@@ -164,10 +200,10 @@ export default function ProductDetails() {
           <div className="lg:col-span-1 maxt-auto max-w-2xl px-4 pb-16 sm:px-6 lg:max-w-7xl lg:px-8 lg:pb-24">
             <div className="lg:col-span-2 ">
               <h1 className="text-lg lg:text-xl font-semibold text-gray-900">
-                Bonkers Corner
+                {product.brand}
               </h1>
               <h1 className="text-lg lg:text-xl text-gray-900 opacity-60 pt-1">
-                Casual Puff Sleeves Solid Women White Top
+                {product.title}
               </h1>
             </div>
 
@@ -175,17 +211,17 @@ export default function ProductDetails() {
             <div className="mt-4 lg:row-span-3 lg:mt-0">
               <h2 className="sr-only">Product information</h2>
               <div className="flex space-x-5 items-center text-lg lg:text-xl text-gray-900 mt-6">
-                <p className="font-semibold">₹299</p>
-                <p className="opacity-50 line-through ">₹399</p>
-                <p className="text-green-700 font-semibold">5% off</p>
+                <p className="font-semibold">₹{product.discountedPrice}</p>
+                <p className="opacity-50 line-through ">₹{product.price}</p>
+                <p className="text-green-700 font-semibold">{product.discountPercent}% off</p>
               </div>
               {/* Reviews */}
                           <div className="mt-6">
                               <div className="flex items-center space-x-3">
-                                  <Rating name="read-only" value={3.5} readOnly />
-                                  <p className="opacity-50 text-sm">54658 Ratings</p>
-                                  <p className="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">3786 Reviews</p>
-                              </div>              
+                                  <Rating name="read-only" value={product.ratings?.length > 0 ? product.ratings.reduce((a, b) => a + b, 0) / product.ratings.length : 0} readOnly />
+                                  <p className="opacity-50 text-sm">{product.numRatings} Ratings</p>
+                                  <p className="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">{product.reviews?.length || 0} Reviews</p>
+                              </div>
               </div>
 
               <form className="mt-10">
@@ -208,14 +244,14 @@ export default function ProductDetails() {
                       Choose a size
                     </RadioGroup.Label>
                     <div className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4">
-                      {product.sizes.map((size) => (
+                      {sizes.map((size) => (
                         <RadioGroup.Option
                           key={size.name}
                           value={size}
-                          disabled={!size.inStock}
+                          disabled={size.quantity <= 0}
                           className={({ active }) =>
                             classNames(
-                              size.inStock
+                              size.quantity > 0
                                 ? "cursor-pointer bg-white text-gray-900 shadow-sm"
                                 : "cursor-not-allowed bg-gray-50 text-gray-200",
                               active ? "ring-2 ring-indigo-500" : "",
@@ -228,7 +264,7 @@ export default function ProductDetails() {
                               <RadioGroup.Label as="span">
                                 {size.name}
                               </RadioGroup.Label>
-                              {size.inStock ? (
+                              {size.quantity > 0 ? (
                                 <span
                                   className={classNames(
                                     active ? "border" : "border-2",
@@ -293,7 +329,7 @@ export default function ProductDetails() {
 
                 <div className="mt-4">
                   <ul role="list" className="list-disc space-y-2 pl-4 text-sm">
-                    {product.highlights.map((highlight) => (
+                    {highlights.map((highlight) => (
                       <li key={highlight} className="text-gray-400">
                         <span className="text-gray-600">{highlight}</span>
                       </li>
