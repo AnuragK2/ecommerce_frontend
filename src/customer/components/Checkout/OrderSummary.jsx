@@ -1,18 +1,42 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import AddressCard from '../AddressCard/AddressCard'
 import { Button } from '@mui/material';
 import CartItem from '../Cart/CartItem';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { createOrder, getOrderById } from '../../../State/Order/Action';
+import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const OrderSummary = () => {
+    const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location=useLocation();
+  const {order}=useSelector(store=>store)
+  const searchParams = new URLSearchParams(location.search);
+const orderId = searchParams.get("order_id");
+
+const totalPrice = order.order?.orderItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+    const totalDiscountedPrice = order.order?.orderItems?.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0) || 0;
+    const discount = totalPrice - totalDiscountedPrice;
+    const totalItem = order.order?.orderItems?.length || 0;
+
+
+  useEffect(()=>{
+
+    dispatch(getOrderById(orderId))
+    
+  }, [orderId]);
+
   return (
       <div>
           <div className='p-5 shadow-lg rounded-md border'>
-              <AddressCard />
+              <AddressCard address={order.order?.shippingAddress} />
           </div>
            <div>
           <div className='lg:grid grid-cols-3  relative'>
               <div className='col-span-2'>
-                  {[1,1,1,1].map((item, idx)=>(<CartItem key={idx} />))}
+                  {order.order?.orderItems.map((item)=>(<CartItem item={item} />))}
               </div>
               <div className='px-5 sticky top-0 h-[100vh] mt-5 lg:mt-0'>
               <div>
@@ -21,11 +45,11 @@ const OrderSummary = () => {
                       <div className='space-y-3 font-semibold mb-5'>
                           <div className='flex justify-between pt-3 text-black'>
                               <span>Price</span>
-                              <span>₹299</span>
+                              <span>{`₹${order.order?.totalPrice?.toFixed(2)}`}</span>
                           </div>
                           <div className='flex justify-between pt-3'>
                               <span>Discount</span>
-                              <span className=' text-green-700'>-₹100</span>
+                              <span className=' text-green-700'>{`-₹${order.order?.discount?.toFixed(2)}`}</span>
                           </div>
                           <div className='flex justify-between pt-3 '>
                               <span>Delivery Charges</span>
@@ -33,7 +57,7 @@ const OrderSummary = () => {
                           </div>
                           <div className='flex justify-between pt-3  font-bold'>
                               <span>Total Amount</span>
-                              <span className='text-green-700'>₹339</span>
+                              <span className='text-green-700'>{`₹${order.order?.totalDiscountedPrice?.toFixed(2)}`}</span>
                           </div>
                           
                       </div>
