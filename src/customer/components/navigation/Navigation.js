@@ -43,8 +43,22 @@ export default function Navigation() {
   }
 
   const handleCategoryClick = (category, section, item, close) => {
-    navigate(`/${category.id}/${section.id}/${item.id}`)
-    close();
+    // Build path and navigate (no query params)
+    const path = `/${category.id}/${section.id}/${item.id}`;
+    navigate(path);
+    if (close) {
+      try {
+        // try closing with a boolean (for setOpen)
+        close(false);
+      } catch (e) {
+        try {
+          // try calling it without args (for Headless UI close)
+          close();
+        } catch (e2) {
+          // ignore
+        }
+      }
+    }
   }
 
   useEffect(() => {
@@ -74,7 +88,7 @@ export default function Navigation() {
       {/* Mobile menu */}
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-40 lg:hidden" onClose={setOpen}>
-          <Transition.Child
+            <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-linear duration-300"
             enterFrom="opacity-0"
@@ -158,9 +172,14 @@ export default function Navigation() {
                               >
                               {section.items.map((item) => (
                                 <li key={item.name} className="flow-root">
-                                  <a href={item.href} className="-m-2 block p-2 text-gray-500">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCategoryClick(category, section, item, setOpen)}
+                                    className="-m-2 block p-2 text-gray-500 w-full text-left bg-transparent border-none"
+                                    style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+                                  >
                                     {item.name}
-                                  </a>
+                                  </button>
                                 </li>
                               ))}
                             </ul>
@@ -262,6 +281,7 @@ export default function Navigation() {
                           </div>
 
                           <Transition
+                            show={open}
                             as={Fragment}
                             enter="transition ease-out duration-200"
                             enterFrom="opacity-0"
@@ -270,7 +290,7 @@ export default function Navigation() {
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                           >
-                            <Popover.Panel className="absolute inset-x-0 top-full text-sm text-gray-500">
+                            <Popover.Panel className="absolute inset-x-0 top-full text-sm text-gray-500 z-50">
                               {/* Presentational element used to render the bottom shadow, if we put the shadow on the actual panel it pokes out the top, so we use this shorter element to hide the top of the shadow */}
                               <div className="absolute inset-0 top-1/2 bg-white shadow" aria-hidden="true" />
 
@@ -309,12 +329,14 @@ export default function Navigation() {
                                           >
                                             {section.items.map((item) => (
                                               <li key={item.name} className="flex">
-                                                <p onClick={() => handleCategoryClick(
-                                                  category, section, item, close
-                                                )} className="cursor-pointer hover:text-gray-800">{item.name}</p>
-                                                {/* <a href={item.href} className="hover:text-gray-800">
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleCategoryClick(category, section, item, close)}
+                                                  className="cursor-pointer hover:text-gray-800 bg-transparent border-none p-0 text-left"
+                                                  style={{ background: 'none', border: 'none', padding: 0 }}
+                                                >
                                                   {item.name}
-                                                </a> */}
+                                                </button>
                                               </li>
                                             ))}
                                           </ul>

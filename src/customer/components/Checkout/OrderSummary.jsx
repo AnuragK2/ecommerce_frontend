@@ -12,7 +12,7 @@ const OrderSummary = () => {
            <div>
           <div className='lg:grid grid-cols-3  relative'>
               <div className='col-span-2'>
-                  {[1,1,1,1].map((item)=><CartItem />)}
+                  {[1,1,1,1].map((item, idx)=>(<CartItem key={idx} />))}
               </div>
               <div className='px-5 sticky top-0 h-[100vh] mt-5 lg:mt-0'>
               <div>

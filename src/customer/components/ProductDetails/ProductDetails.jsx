@@ -149,8 +149,8 @@ export default function ProductDetails() {
               />
             </div>
             <div className="flex flex-wrap space-x-5 justify-center items-center">
-              {product.images.map((item) => (
-                <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] max-h-[5rem] mt-4">
+              {product.images.map((item, idx) => (
+                <div key={item.src || idx} className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] max-h-[5rem] mt-4">
                   <img
                     src={item.src}
                     alt={item.alt}
@@ -322,7 +322,7 @@ export default function ProductDetails() {
                           
                           <Grid item xs={7}>
                               <div className="space-y-5">
-                                  {[1,1,1].map((item)=><ProductReviewCard />)}
+                                  {[1,1,1].map((item, idx)=>(<ProductReviewCard key={idx} />))}
                               </div>
                           </Grid>
                           <Grid item xs={5}>
@@ -390,7 +390,7 @@ export default function ProductDetails() {
               <section className="pt-10">
                   <h1 className="py-5 text-xl font-semibold">Similar Products</h1>
                   <div className="flex flex-wrap space-y-5">
-                      {mens_kurta.map((item) => <HomeSectionCard product={item} />)}
+                      {mens_kurta.map((item, idx) => <HomeSectionCard key={item.id || item._id || idx} product={item} />)}
                   </div>
               </section>
       </div>

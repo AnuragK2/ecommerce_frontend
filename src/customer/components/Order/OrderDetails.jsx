@@ -17,7 +17,8 @@ const OrderDetails = () => {
               <OrderTracker  activeStep={3}/>
           </div>
           <Grid className='space-y-5' container>
-              {[1,1,1,1,1].map((item)=> <Grid item container className='shadow-xl rounded-md p-5 border' sx={{alignItems:'center',justifyContent:'space-between'}}>
+              {[1,1,1,1,1].map((item, idx)=> (
+                <Grid key={idx} item container className='shadow-xl rounded-md p-5 border' sx={{alignItems:'center',justifyContent:'space-between'}}>
                   <Grid item xs={6}>
                       <div className='flex items-center space-x-4'>
                           <img className='w-[5rem] h-[8rem] object-cover object-top ' src="https://assets.bonkerscorner.com/uploads/2022/12/25170320/Coder-Oversized-T-shirt-02-1200x1800.jpg" alt="productImage" />
@@ -36,7 +37,7 @@ const OrderDetails = () => {
                           
                       </Box>
                   </Grid>
-              </Grid>)}
+              </Grid>))}
              
           </Grid>
     </div>

@@ -12,7 +12,7 @@
   }
   ```
 */
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
@@ -34,7 +34,9 @@ import {
   RadioGroup,
 } from "@mui/material";
 import SortIcon from "@mui/icons-material/Sort";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { findProducts } from "../../../State/Product/Action";
 
 const sortOptions = [
   { name: "Price: Low to High", href: "#", current: false },
@@ -93,6 +95,22 @@ export default function Product() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const param=useParams();
+  const dispatch = useDispatch();
+  const productState = useSelector((store) => store.product);
+  const productResponse = productState?.products;
+  const decodeQueryString = decodeURIComponent(location.search);
+  const searchParams = new URLSearchParams(decodeQueryString);
+  const colorValue = searchParams.get("color");
+  const sizeValue = searchParams.get("size");
+  const sortValue = searchParams.get("sort");
+  const priceValue = searchParams.get("price");
+  const discount = searchParams.get("discount");
+  const pageNumber = Number(searchParams.get("pageNumber")) || 1;
+  const stock = searchParams.get("stock") || "inStock";
+  const productItems =
+    (productResponse?.products?.content ?? productResponse?.content) ??
+    (Array.isArray(productResponse) ? productResponse : []);
 
   const handleFilter = (value, sectionId) => {
     const searchParams = new URLSearchParams(location.search);
@@ -118,6 +136,29 @@ export default function Product() {
     const query = searchParams.toString();
     navigate({ search: `?${query}` });
   };
+
+  useEffect(() => {
+    // When no price filter is provided, keep min/max as null so we don't
+    // accidentally send maxPrice=0 which would filter out all results.
+    const [minPrice, maxPrice] =
+      priceValue === null ? [null, null] : priceValue.split("-").map(Number);
+    const data = {
+      category:param.levelThree,
+      colors:colorValue || [],
+      sizes:sizeValue || [],
+      sort:sortValue || "price_low",
+      minPrice,
+      maxPrice,
+      minDiscount:discount || 0,
+      stock:stock,
+  // The server expects 1-based page numbers. Send the numeric 1-based pageNumber
+  pageNumber: pageNumber,
+      pageSize:10
+    }
+  console.log("findProducts request data ->", data);
+  dispatch(findProducts(data));
+
+  }, [param.levelThree, colorValue, sizeValue, sortValue, priceValue, discount, stock, pageNumber]);
 
   return (
     <div className="bg-white">
@@ -251,48 +292,53 @@ export default function Product() {
 
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
-                <div>
-                  <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                    Sort
-                    <ChevronDownIcon
-                      className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-                      aria-hidden="true"
-                    />
-                  </Menu.Button>
-                </div>
-
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
-                >
-                  <Menu.Items className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <div className="py-1">
-                      {sortOptions.map((option) => (
-                        <Menu.Item key={option.name}>
-                          {({ active }) => (
-                            <a
-                              href={option.href}
-                              className={classNames(
-                                option.current
-                                  ? "font-medium text-gray-900"
-                                  : "text-gray-500",
-                                active ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm"
-                              )}
-                            >
-                              {option.name}
-                            </a>
-                          )}
-                        </Menu.Item>
-                      ))}
+                {({ open }) => (
+                  <>
+                    <div>
+                      <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
+                        Sort
+                        <ChevronDownIcon
+                          className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+                          aria-hidden="true"
+                        />
+                      </Menu.Button>
                     </div>
-                  </Menu.Items>
-                </Transition>
+
+                    <Transition
+                      show={open}
+                      as={Fragment}
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <div className="py-1">
+                          {sortOptions.map((option) => (
+                            <Menu.Item key={option.name}>
+                              {({ active }) => (
+                                <a
+                                  href={option.href}
+                                  className={classNames(
+                                    option.current
+                                      ? "font-medium text-gray-900"
+                                      : "text-gray-500",
+                                    active ? "bg-gray-100" : "",
+                                    "block px-4 py-2 text-sm"
+                                  )}
+                                >
+                                  {option.name}
+                                </a>
+                              )}
+                            </Menu.Item>
+                          ))}
+                        </div>
+                      </Menu.Items>
+                    </Transition>
+                  </>
+                )}
               </Menu>
 
               <button
@@ -437,16 +483,15 @@ export default function Product() {
                                   name="radio-buttons-group"
                                 >
                                   {section.options.map((option, optionIdx) => (
-                                    <>
-                                      <FormControlLabel
-                                        onChange={(e) =>
-                                          handleRadioFilterChange(e, section.id)
-                                        }
-                                        value={option.value}
-                                        control={<Radio />}
-                                        label={option.label}
-                                      />
-                                    </>
+                                    <FormControlLabel
+                                      key={option.value || optionIdx}
+                                      onChange={(e) =>
+                                        handleRadioFilterChange(e, section.id)
+                                      }
+                                      value={option.value}
+                                      control={<Radio />}
+                                      label={option.label}
+                                    />
                                   ))}
                                 </RadioGroup>
                               </FormControl>
@@ -461,9 +506,13 @@ export default function Product() {
               {/* Product grid */}
               <div className="lg:col-span-4 w-full">
                 <div className="flex flex-wrap justify-center bg-white py-5">
-                  {mens_kurta.map((item) => (
-                    <ProductCard product={item} />
-                  ))}
+                  {productItems.length > 0 ? (
+                    productItems.map((item, idx) => (
+                      <ProductCard key={item.id || item._id || item.name || idx} product={item} />
+                    ))
+                  ) : (
+                    <p>No products found.</p>
+                  )}
                 </div>
               </div>
             </div>
