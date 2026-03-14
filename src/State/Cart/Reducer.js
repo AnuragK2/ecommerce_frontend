@@ -14,7 +14,7 @@ export const cartReducer=(state=initialState, action)=>{
     case ADD_ITEM_TO_CART_SUCCESS:
       return {
         ...state,
-        cartItems: [...state.cartItems, action.payload.cartItems],
+        cartItems: [...state.cartItems, action.payload],
         loading: false,
       };
     case ADD_ITEM_TO_CART_FAILURE:
@@ -49,7 +49,7 @@ export const cartReducer=(state=initialState, action)=>{
       return {
         ...state,
         cartItems: state.cartItems.filter(
-          (item) => item._id !== action.payload
+          (item) => item._id !== action.payload._id
         ),
         loading: false,
       };

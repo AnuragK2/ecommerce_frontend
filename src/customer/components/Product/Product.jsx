@@ -97,7 +97,7 @@ export default function Product() {
   const navigate = useNavigate();
   const param=useParams();
   const dispatch = useDispatch();
-  const productState = useSelector((store) => store.product);
+  const productState = useSelector((store) => store.products);
   const productResponse = productState?.products;
   const decodeQueryString = decodeURIComponent(location.search);
   const searchParams = new URLSearchParams(decodeQueryString);
