@@ -8,7 +8,7 @@ import { getCart } from '../../../State/Cart/Action';
 const Cart = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { cartItems, cart } = useSelector((state) => state.cart);
+    const { cartItems, cart, updateCartItem, deleteCartItem } = useSelector((state) => state.cart);
 
     const totalPrice = cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
     const totalDiscountedPrice = cartItems?.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0) || 0;
@@ -21,7 +21,7 @@ const Cart = () => {
 
     useEffect(() => {
         dispatch(getCart())
-      }, []);
+      }, [updateCartItem, deleteCartItem]);
 
   return (
       <div>

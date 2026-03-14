@@ -39,7 +39,11 @@ export const removeCartItem = (reqData) => async (dispatch) => {
   dispatch({ type: REMOVE_CART_ITEM_REQUEST });
   try {
     const { data } = await api.delete(`/api/cart_items/${reqData.cartItemId}`);
-    dispatch({ type: REMOVE_CART_ITEM_SUCCESS, payload: reqData.cartItemId });
+    // keep the store in sync immediately after successful deletion
+    dispatch({
+      type: REMOVE_CART_ITEM_SUCCESS,
+      payload: reqData.cartItemId,
+    });
   } catch (error) {
     dispatch({ type: REMOVE_CART_ITEM_FAILURE, payload: error.message });
   }
@@ -52,7 +56,15 @@ export const updateCartItem = (reqData) => async (dispatch) => {
       `/api/cart_items/${reqData.cartItemId}`,
       reqData.data
     );
-    dispatch({ type: UPDATE_CART_ITEM_SUCCESS, payload: data });
+    // also pass the intent (id + new values) so reducer can update optimistically
+    dispatch({
+      type: UPDATE_CART_ITEM_SUCCESS,
+      payload: {
+        cartItemId: reqData.cartItemId,
+        data: reqData.data,
+        response: data,
+      },
+    });
   } catch (error) {
     dispatch({ type: UPDATE_CART_ITEM_FAILURE, payload: error.message });
   }
