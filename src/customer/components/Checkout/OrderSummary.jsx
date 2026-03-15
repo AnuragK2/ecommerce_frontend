@@ -19,16 +19,40 @@ const orderId = searchParams.get("order_id");
   // derive totals from items in case backend returns zeros
   const computedTotalPrice =
     order.order?.orderItems?.reduce(
-      (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+      (sum, item) =>
+        sum +
+        ((item.product?.price ?? item.price ?? 0) * (item.quantity || 0)),
       0
     ) || 0;
   const computedTotalDiscounted =
     order.order?.orderItems?.reduce(
-      (sum, item) => sum + (item.discountedPrice ?? item.price ?? 0) * (item.quantity || 0),
+      (sum, item) =>
+        sum +
+        (
+          item.discountedPrice ??
+          item.product?.discountedPrice ??
+          item.price ??
+          item.product?.price ??
+          0
+        ) * (item.quantity || 0),
       0
     ) || 0;
   const computedDiscount = computedTotalPrice - computedTotalDiscounted;
   const totalItem = order.order?.orderItems?.length || 0;
+
+  // choose server totals if they are positive, otherwise fallback to computed
+  const displayTotalPrice =
+    order.order?.totalPrice && order.order.totalPrice > 0
+      ? order.order.totalPrice
+      : computedTotalPrice;
+  const displayTotalDiscounted =
+    order.order?.totalDiscountedPrice && order.order.totalDiscountedPrice > 0
+      ? order.order.totalDiscountedPrice
+      : computedTotalDiscounted;
+  const displayDiscount =
+    order.order?.discount && order.order.discount > 0
+      ? order.order.discount
+      : computedDiscount;
 
 
   useEffect(() => {
@@ -45,21 +69,21 @@ const orderId = searchParams.get("order_id");
           <div className='lg:grid grid-cols-3  relative'>
               <div className='col-span-2'>
                   {order.order?.orderItems?.map((item) => (
-                    <CartItem key={item._id || item.id} item={item} />
+                    <CartItem key={item._id || item.id} item={item} readOnly />
                   ))}
               </div>
               <div className='px-5 sticky top-0 h-[100vh] mt-5 lg:mt-0'>
               <div>
                       <p className='uppercase font-bold opacity-60 pb-4 mt-5'>Price Details</p>
                       <hr />
-                      <div className='space-y-3 font-semibold mb-5'>
+                          <div className='space-y-3 font-semibold mb-5'>
                           <div className='flex justify-between pt-3 text-black'>
                               <span>Price</span>
-                              <span>{`₹${(order.order?.totalPrice ?? computedTotalPrice).toFixed(2)}`}</span>
+                              <span>{`₹${displayTotalPrice.toFixed(2)}`}</span>
                           </div>
                           <div className='flex justify-between pt-3'>
                               <span>Discount</span>
-                              <span className=' text-green-700'>{`-₹${(order.order?.discount ?? computedDiscount).toFixed(2)}`}</span>
+                              <span className=' text-green-700'>{`-₹${displayDiscount.toFixed(2)}`}</span>
                           </div>
                           <div className='flex justify-between pt-3 '>
                               <span>Delivery Charges</span>
@@ -67,7 +91,7 @@ const orderId = searchParams.get("order_id");
                           </div>
                           <div className='flex justify-between pt-3  font-bold'>
                               <span>Total Amount</span>
-                              <span className='text-green-700'>{`₹${(order.order?.totalDiscountedPrice ?? computedTotalDiscounted).toFixed(2)}`}</span>
+                              <span className='text-green-700'>{`₹${displayTotalDiscounted.toFixed(2)}`}</span>
                           </div>
                           
                       </div>

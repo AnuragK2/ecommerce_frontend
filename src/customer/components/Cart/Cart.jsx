@@ -10,8 +10,26 @@ const Cart = () => {
     const dispatch = useDispatch();
     const { cartItems, cart, updateCartItem, deleteCartItem } = useSelector((state) => state.cart);
 
-    const totalPrice = cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
-    const totalDiscountedPrice = cartItems?.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0) || 0;
+    // compute totals from original and discounted prices on the product
+    const totalPrice =
+        cartItems?.reduce(
+            (sum, item) =>
+                sum + (item.product?.price ?? item.price ?? 0) * (item.quantity || 0),
+            0
+        ) || 0;
+    const totalDiscountedPrice =
+        cartItems?.reduce(
+            (sum, item) =>
+                sum +
+                (
+                    item.discountedPrice ??
+                    item.product?.discountedPrice ??
+                    item.price ??
+                    item.product?.price ??
+                    0
+                ) * (item.quantity || 0),
+            0
+        ) || 0;
     const discount = totalPrice - totalDiscountedPrice;
     const totalItem = cartItems?.length || 0;
 

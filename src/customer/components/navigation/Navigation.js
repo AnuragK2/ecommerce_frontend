@@ -10,6 +10,7 @@ import AuthModel from '../../Auth/AuthModel'
 import { useDispatch, useSelector } from 'react-redux';
 import { getUser } from '../../../State/Auth/Action';
 import { logout } from '../../../State/Auth/Action';
+import { getCart } from '../../../State/Cart/Action';
 
 
 
@@ -27,7 +28,7 @@ export default function Navigation() {
   const [anchorEl, setAnchorEl] = useState(null);
   const openUserMenu = Boolean(anchorEl);
   const jwt = localStorage.getItem("jwt"); 
-  const {auth}  = useSelector(store=> store);
+  const {auth, cart}  = useSelector(store=> store);
   
   const handleUserClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -64,6 +65,7 @@ export default function Navigation() {
   useEffect(() => {
           if(jwt){
               dispatch(getUser(jwt));
+              dispatch(getCart());
           }
       }, [jwt, auth.jwt]);
 
@@ -82,6 +84,11 @@ export default function Navigation() {
     handleCloseUserMenu();
     navigate("/login");
   }
+
+  const cartCount = cart?.cartItems?.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0
+  ) || 0;
 
   return (
     <div className="bg-white z-50">
@@ -419,13 +426,13 @@ export default function Navigation() {
 
                 {/* Cart */}
                 <div className="ml-4 flow-root lg:ml-6">
-                  <Button className="group -m-2 flex items-center p-2">
+                  <Button className="group -m-2 flex items-center p-2" onClick={() => navigate("/cart")}>
                     <ShoppingBagIcon
                       className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
                       aria-hidden="true"
                     />
-                    <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">0</span>
-                    <span className="sr-only">items in cart, view bag</span>
+                    <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">{cartCount}</span>
+                    <span className="sr-only">{`${cartCount} items in cart, view bag`}</span>
                   </Button>
                 </div>
               </div>
