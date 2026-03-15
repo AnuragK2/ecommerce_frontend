@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { createOrder, getOrderById } from '../../../State/Order/Action';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { createPayment } from '../../../State/Payment/Action';
 
 const OrderSummary = () => {
     const dispatch = useDispatch();
@@ -60,6 +61,12 @@ const orderId = searchParams.get("order_id");
     dispatch(getOrderById(orderId));
   }, [orderId, dispatch]);
 
+ const handleCheckOut = () => {
+  if (!orderId) return;
+  const jwt = localStorage.getItem("jwt");
+  dispatch(createPayment({ orderId, jwt }));
+ }
+
   return (
       <div>
           <div className='p-5 shadow-lg rounded-md border'>
@@ -95,7 +102,7 @@ const orderId = searchParams.get("order_id");
                           </div>
                           
                       </div>
-                       <Button  variant="contained" className='w-full mt-5' sx={{px:"2.5rem", py:"0.7rem",bgcolor:"#9155fd", mt:"1rem"}}>
+                       <Button onClick={handleCheckOut} variant="contained" className='w-full mt-5' sx={{px:"2.5rem", py:"0.7rem",bgcolor:"#9155fd", mt:"1rem"}}>
                                   Check Out
                 </Button>
               </div>
