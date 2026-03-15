@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_BASE_URL="https://ecommerce-backend-9jhx.onrender.com"
+export const API_BASE_URL=process.env.REACT_APP_API_BASE_URL;
 
 const jwt= localStorage.getItem("jwt");
 
